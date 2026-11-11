@@ -109,11 +109,22 @@ async function fetchSubtitle(url: string): Promise<Reply> {
   try { u = new URL(url); } catch { return bad("bad_url"); }
   if (u.protocol !== "https:") return bad("https_only");
   try {
-    const r = await fetch(u, { credentials: "omit" });
-    if (!r.ok) return { ok: false, status: r.status, code: `http_${r.status}` };
-    const buf = await r.arrayBuffer();
-    if (buf.byteLength > MAX_SUBTITLE_BYTES) return { ok: false, status: 413, code: "too_large" };
-    return { ok: true, status: 200, data: new TextDecoder().decode(buf) };
+    const ctl = new AbortController();
+    const r = await fetch(u, { credentials: "omit", signal: ctl.signal });
+    if (!r.ok || !r.body) return { ok: false, status: r.status, code: `http_${r.status}` };
+    if (Number(r.headers.get("content-length") ?? 0) > MAX_SUBTITLE_BYTES) {
+      ctl.abort();
+      return { ok: false, status: 413, code: "too_large" };
+    }
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    for await (const chunk of r.body as unknown as AsyncIterable<Uint8Array>) {
+      total += chunk.byteLength;
+      if (total > MAX_SUBTITLE_BYTES) { ctl.abort(); return { ok: false, status: 413, code: "too_large" }; }
+      chunks.push(chunk);
+    }
+    const dec = new TextDecoder();
+    return { ok: true, status: 200, data: chunks.map((c, i) => dec.decode(c, { stream: i < chunks.length - 1 })).join("") };
   } catch (e) {
     return { ok: false, status: 0, code: "fetch_failed", message: String(e) };
   }

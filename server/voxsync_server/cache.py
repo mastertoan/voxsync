@@ -2,6 +2,7 @@
 server restarts and is shared across episodes/titles that repeat a line with the same voice."""
 import hashlib
 import os
+import shutil
 import threading
 from pathlib import Path
 
@@ -71,7 +72,7 @@ class DiskCache:
             sf.write(tmp, wav, sr, subtype="PCM_16", format="WAV")
         except Exception as e:
             tmp.unlink(missing_ok=True)
-            if _is_enospc(e):
+            if _is_enospc(e) or shutil.disk_usage(self.root).free < _MIN_FREE:
                 with self._lock:
                     self._evict(target=int(self._bytes * 0.8))     # free space we own, then report
                 raise DiskFull(str(e)) from e
@@ -119,12 +120,13 @@ class DiskFull(OSError):
     pass
 
 
+_MIN_FREE = 64 * 1024 * 1024  # below this a failed write is treated as disk-full (libsndfile hides errno)
+
+
 def _is_enospc(e: BaseException | None) -> bool:
     import errno
     while e is not None:
         if isinstance(e, OSError) and e.errno == errno.ENOSPC:
-            return True
-        if "No space left" in str(e):
             return True
         e = e.__cause__ or e.__context__
     return False

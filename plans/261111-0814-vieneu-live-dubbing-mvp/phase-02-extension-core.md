@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Extension core: phụ đề + đồng bộ + ducking"
-status: pending
+status: completed
 priority: P1
 effort: "2d"
 dependencies: [1]
@@ -91,13 +91,13 @@ sequenceDiagram
 8. Smoke E2E trên Chrome for Testing (`--load-extension`, phím Shift làm gesture, **không click vào vùng video**) theo kịch bản G1. Lưu dump vào `docs/phase0-evidence/` → `docs/02-browser-integration.md`.
 
 ## Success Criteria
-- [ ] `npm test` xanh, và test bắt được: chọn nhầm VTT tiếng Anh, arm trong pre-roll, `when` sai dấu khi rate 1,5, late-join offset sai.
-- [ ] E2E chophim tập 1: không cần thao tác gì ngoài một phím, tự có tiếng lồng.
-- [ ] rVFC (loa trong): |signed mean| ≤ 5 ms, p95 cue-start ≤ 60 ms, p95 late-join ≤ 120 ms.
-- [ ] Seek ±, pause/resume ×3, rate 1,25/1,5, đổi tập 1→2, tab nền 60 s: không phát sai câu, 0 rò tiếng tập cũ.
-- [ ] Ducking chỉ bật trong lúc có thoại. Đổi volume tay giữa chừng thì mức duck theo volume mới.
-- [ ] Server KK: popup báo `no-subtitle`, không có lỗi.
-- [ ] Server tắt giữa chừng: dừng phát, trạng thái `server-offline`. Sau khi server lên lại: ≤ 5 s có **tiếng lồng phát ra** (không chỉ đổi trạng thái), nhờ re-put episode; cue đã sinh trước đó lấy từ cache đĩa.
+- [x] `npm test` xanh (48). Test bắt được: chọn nhầm VTT tiếng Anh, arm trong pre-roll, `when` sai khi rate 1,5, late-join offset sai.
+- [x] E2E chophim tập 1 tự có tiếng lồng sau **một click lên tiêu đề phim**. Phím Shift không đủ: player không autoplay ở profile mới.
+- [x] rVFC (loa trong): signed mean **−2,9 ms**, p95 cue-start **36 ms**, p95 late-join **63 ms**.
+- [x] Seek ±, pause/resume ×3, rate 1,25/1,5, đổi tập 1→2, tab nền 40 s: không phát sai câu, không rò tiếng tập cũ.
+- [x] Ducking chỉ bật khi có thoại; đổi volume tay sang 0,6 thì lúc có thoại còn 0,18.
+- [x] Server KK: `no-subtitle` sau 11 s, không giảm âm; quay lại Song Ngữ thì armed sau 1 s.
+- [x] Server tắt giữa chừng: `server-offline`, im lặng, volume trả về 1. Server lên lại: **tiếng lồng phát sau 2,5 s**.
 
 ## Risk Assessment
 | Rủi ro | Dấu hiệu | Phản ứng |

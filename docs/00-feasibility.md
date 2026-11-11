@@ -175,7 +175,7 @@ stateDiagram-v2
 
 ## 6. Thí nghiệm gating (bắt buộc trước Phase 1)
 
-Ba thí nghiệm gating là **G1–G3**. Mỗi thí nghiệm là một spike vứt đi, đặt trong `spikes/`, không phải code sản phẩm. Kết quả xem §6.1.
+Ba thí nghiệm gating là **G1–G3**. Mỗi thí nghiệm là một spike vứt đi, không phải code sản phẩm. Kết quả xem §6.1. Thư mục `spikes/` đã được xoá ở bản 0.1.0; mã nguồn vẫn còn trong git ở commit `c470493`. Phép đo rVFC của G1 đã được đưa vào debug mode của extension.
 
 | ID | Thí nghiệm | Pass khi | Nếu fail |
 |---|---|---|---|

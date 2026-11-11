@@ -33,7 +33,7 @@ Bản dùng được hằng ngày trên `chophim.lol`, server "Song Ngữ". Mọ
 VoxSync/
 ├── server/      # Python (uv), FastAPI: TTS, cache, giọng
 ├── extension/   # MV3: sw, content, popup, options, rules
-├── docs/  benchmarks/  spikes/  plans/
+├── docs/  benchmarks/  plans/
 ```
 Bỏ cấu trúc monorepo `packages/*` trong brief: MVP chỉ có 2 app; package dùng chung là YAGNI.
 
@@ -41,9 +41,9 @@ Bỏ cấu trúc monorepo `packages/*` trong brief: MVP chỉ có 2 app; package
 | # | Phase | Phụ thuộc | Có thể chạy song song | Status |
 |---|---|---|---|---|
 | 1 | [TTS server local](./phase-01-tts-server.md) | — | — | Completed |
-| 2 | [Extension core: phụ đề + đồng bộ + ducking](./phase-02-extension-core.md) | 1 | — | Pending |
-| 3 | [Popup + quản lý giọng (F1)](./phase-03-ui-voice-manager.md) | 1, 2 | với 4 | Pending |
-| 4 | [Chặn quảng cáo (F3)](./phase-04-ad-blocking.md) | 2 | với 3 | Pending |
+| 2 | [Extension core: phụ đề + đồng bộ + ducking](./phase-02-extension-core.md) | 1 | — | Completed |
+| 3 | [Popup + quản lý giọng (F1)](./phase-03-ui-voice-manager.md) | 1, 2 | với 4 | Completed |
+| 4 | [Chặn quảng cáo (F3)](./phase-04-ad-blocking.md) | 2 | với 3 | Completed |
 | 5 | [Hardening + Bluetooth + phát hành nội bộ](./phase-05-hardening-release.md) | 1–4 | — | Pending |
 
 ```mermaid

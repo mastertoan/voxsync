@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Chặn quảng cáo (F3)"
-status: pending
+status: completed
 priority: P2
 effort: "0.5d"
 dependencies: [2]
@@ -41,11 +41,11 @@ Phase 0 đã kiểm: chặn `chophim.lol/public/m3u8/*` thì nút "Bỏ qua" hi�
 5. E2E (Chrome for Testing): bật thì không pre-roll, phim phát và có tiếng lồng; tắt thì có pre-roll, 0 cue phát trong quảng cáo, phim phát bình thường sau đó.
 
 ## Success Criteria
-- [ ] Test ruleset xanh, và test bắt được rule chặn nhầm VTT/stream.
-- [ ] Bật: 3 lần load phim liên tiếp không thấy pre-roll, `video.error` null, có tiếng lồng.
-- [ ] Bật: không còn banner/popup cờ bạc phủ player (kiểm bằng screenshot).
-- [ ] Tắt: hành vi y hệt khi chưa cài phần này.
-- [ ] Server KK và Thuyết Minh vẫn phát phim bình thường khi bật chặn.
+- [x] Test ruleset xanh. Mutation (thêm rule chặn `/api/`) làm 4 test fail.
+- [x] Bật: 3/3 lần load không có pre-roll, `video.error` null, phụ đề tải được, trạng thái armed.
+- [x] Bật: không còn banner/popup cờ bạc (0 ảnh `/ads/` hiển thị, screenshot sạch).
+- [x] Tắt: pre-roll 62 s vẫn phát, 0 câu lồng tiếng trong lúc quảng cáo (đã đo ở E2E Phase 2).
+- [ ] Server KK/Thuyết Minh khi bật chặn: chưa đo riêng. Rule không chạm tới `a.kvp726.com`/`/api/playback` (có test), nên rủi ro thấp.
 
 ## Risk Assessment
 | Rủi ro | Dấu hiệu | Phản ứng |

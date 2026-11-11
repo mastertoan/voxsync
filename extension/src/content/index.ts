@@ -432,7 +432,10 @@ function start(): void {
           // the sample heard at onset is `offset` seconds into the line, which should coincide with media time
           // target + offset (the line is spoken at 1x wall speed; at rate r the picture moves r× faster)
           const shownAtOnset = md.mediaTime - into * v.playbackRate;
-          S.av.push([shownAtOnset - (p.target + p.offset), v.playbackRate, p.offset > 0 ? 1 : 0]);
+          // reference = where the line belongs on the timeline (cue start + server delay), NOT incl. the user
+          // offset, so a deliberate +100 ms offset shows up as +100 ms here
+          const intended = p.target - S.settings.offsetMs / 1000;
+          S.av.push([shownAtOnset - (intended + p.offset), v.playbackRate, p.offset > 0 ? 1 : 0]);
         }
         if (S.av.length > 20000) S.av.splice(0, 10000);
       }

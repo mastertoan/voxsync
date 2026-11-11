@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Popup + quản lý giọng (F1)"
-status: pending
+status: completed
 priority: P1
 effort: "1.5d"
 dependencies: [1, 2]
@@ -41,7 +41,7 @@ Viết bằng HTML/TS thuần, không React. Phase này làm song song được 
   - endpoint + token (dán token, nút "Kiểm tra kết nối");
   - giới hạn cache;
   - debug mode + nút export metric.
-- Đổi giọng giữa phim: gửi `episode.put` với voice mới; server sinh lại từ playhead (đã có ở Phase 1).
+- Đổi giọng giữa phim: content script gửi `episode.put` với voice mới; server sinh lại từ playhead (đã có ở Phase 1).
 - Settings lưu ở `chrome.storage.local`; content script lắng nghe `storage.onChanged`.
 - Accessibility cơ bản: điều khiển được bằng bàn phím, có label, tương phản AA.
 

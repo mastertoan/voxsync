@@ -11,8 +11,11 @@ Server TTS chạy local cho extension VoxSync. Dùng VieNeu-TTS v3 Turbo, backen
 ```bash
 cd server
 uv sync
-uv run voxsync-server          # lần đầu tải model khoảng 610 MB vào ~/.voxsync/models
+./scripts/voxsync-server        # = uv run voxsync-server; lần đầu tải model khoảng 610 MB vào ~/.voxsync/models
+./scripts/install-launchagent   # tuỳ chọn: tự chạy khi đăng nhập (--uninstall để gỡ); log ở ~/.voxsync/server.log
 ```
+
+Khi ổ đĩa đầy, server xoá bớt cache của chính nó, tạm dừng sinh tiếng 30 s và trả về `507 disk_full`. Lỗi này hiện lên trong popup của extension.
 
 - Token nằm ở `~/.voxsync/token` (quyền `0600`). Dán token này vào phần Settings của extension.
 - Mọi request phải có header `X-VoxSync-Token`.

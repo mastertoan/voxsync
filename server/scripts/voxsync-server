@@ -1,0 +1,7 @@
+#!/bin/sh
+# Start the VoxSync TTS server (127.0.0.1:8765). Used directly or by the LaunchAgent.
+# First run downloads ~610 MB of models into ~/.voxsync/models, then works offline.
+set -eu
+cd "$(dirname "$0")/.."
+export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$PATH"   # uv + ffmpeg under launchd
+exec uv run --frozen voxsync-server

@@ -1,0 +1,16 @@
+#!/bin/sh
+# Install (or with --uninstall remove) a LaunchAgent that starts the VoxSync server at login.
+set -eu
+SERVER_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+DEST="$HOME/Library/LaunchAgents/dev.voxsync.server.plist"
+if [ "${1:-}" = "--uninstall" ]; then
+  launchctl bootout "gui/$(id -u)" "$DEST" 2>/dev/null || true
+  rm -f "$DEST"
+  echo "removed $DEST"
+  exit 0
+fi
+mkdir -p "$HOME/Library/LaunchAgents" "$HOME/.voxsync"
+sed -e "s#__SERVER_DIR__#$SERVER_DIR#g" -e "s#__HOME__#$HOME#g" "$SERVER_DIR/launchd/dev.voxsync.server.plist" > "$DEST"
+launchctl bootout "gui/$(id -u)" "$DEST" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$DEST"
+echo "installed $DEST — logs: ~/.voxsync/server.log"

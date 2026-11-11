@@ -248,20 +248,25 @@ def test_evicted_audio_is_resynthesized(make_client):
 
 
 def test_disk_full_reports_507_without_burning_retries(make_client, monkeypatch):
-    import errno
+    import shutil
 
     import soundfile
 
     from voxsync_server import main
     c, tts = make_client()
-    real = soundfile.write
+    real, real_usage = soundfile.write, shutil.disk_usage
     full = {"on": True}
 
     def write(path, *a, **k):
         if full["on"]:
-            raise OSError(errno.ENOSPC, "No space left on device")
+            raise RuntimeError("Error : System error.")                # libsndfile: no errno, no ENOSPC text
         return real(path, *a, **k)
+
+    def usage(path):
+        u = real_usage(path)
+        return u._replace(free=1024) if full["on"] else u
     monkeypatch.setattr("voxsync_server.cache.sf.write", write)
+    monkeypatch.setattr("voxsync_server.cache.shutil.disk_usage", usage)
     c.put(f"/episodes/{KEY}", json={"cues": cues(2)})
     assert wait_for(lambda: c.get(f"/episodes/{KEY}/cues/0").status_code == 507)
     assert c.get("/health").json()["diskFull"] is True
