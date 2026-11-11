@@ -17,6 +17,7 @@ Lồng tiếng nhiều nhân vật và có cảm xúc.
 - 4 nhân vật chính có giọng riêng theo giới tính; người dùng đổi giọng từng nhân vật qua `PUT /titles/{t}/characters/{id}`; `GET /episodes/{key}/characters`.
 - Clone: mỗi nhân vật dùng tham chiếu ghép từ 3 câu gốc đầu tiên, sau đó cố định.
 - Mất nguồn âm thanh 3 lần thì các câu còn lại dùng một giọng (`sourceError` trong status).
+- Model nhận diện người nói và giới tính được tải và nạp lúc khởi động server, không đợi tới lần phát đầu tiên.
 - Cảm xúc: mô tả âm thanh trong phụ đề được đổi thành `[cười]`, `[thở dài]`, `[hắng giọng]`.
 
 ### Extension

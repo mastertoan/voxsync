@@ -11,7 +11,7 @@ Server TTS chạy local cho extension VoxSync. Dùng VieNeu-TTS v3 Turbo, backen
 ```bash
 cd server
 uv sync
-./scripts/voxsync-server        # = uv run voxsync-server; lần đầu tải model khoảng 610 MB vào ~/.voxsync/models
+./scripts/voxsync-server        # = uv run voxsync-server; lần đầu tải model khoảng 1 GB (TTS 610 MB + nhận diện người nói 385 MB) vào ~/.voxsync/models
 ./scripts/install-launchagent   # tuỳ chọn: tự chạy khi đăng nhập (--uninstall để gỡ); log ở ~/.voxsync/server.log
 ```
 

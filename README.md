@@ -52,7 +52,7 @@ flowchart LR
 
 Cảm xúc: các mô tả âm thanh trong phụ đề như `[cười khẩy]`, `[thở dài]`, `[hắng giọng]` đi kèm lời thoại được đọc bằng thẻ cảm xúc của VieNeu. Câu chỉ có mô tả âm thanh thì không lồng, vì tiếng gốc đã có.
 
-Lần đầu dùng chế độ nhân vật, server tải thêm 2 model khoảng 400 MB: nhận diện người nói (ERes2Net) và giới tính (audeering wav2vec2, giấy phép CC BY-NC-SA, chỉ dùng phi thương mại).
+Lần đầu khởi động, server tải thêm 2 model khoảng 400 MB (trước khi mở cổng, giống model TTS): nhận diện người nói (ERes2Net) và giới tính (audeering wav2vec2, giấy phép CC BY-NC-SA, chỉ dùng phi thương mại).
 
 ## Số đo (M5 Max, chi tiết trong `docs/`)
 | | |

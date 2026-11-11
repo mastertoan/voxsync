@@ -51,10 +51,16 @@ def build(tts, cache: DiskCache | None = None, voices: VoiceStore | None = None,
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if S.tts is None:                       # production start: load the real engine
+    if S.tts is None:                       # production start: load the real engines
         from .engine import load_tts
+        from .speakers import Embedder
         set_token(load_or_create_token())
-        build(load_tts())
+        tts = load_tts()
+        # speaker + gender models (~400 MB on first run) load before serving, like the TTS models: otherwise
+        # the default multi-voice mode would be silent during the download and a failed download would look
+        # like a dead stream
+        embedder = Embedder()
+        build(tts, embedder_factory=lambda: embedder)
     yield
     S.registry.stop()
 
