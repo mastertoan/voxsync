@@ -247,6 +247,32 @@ def test_evicted_audio_is_resynthesized(make_client):
     assert get_ready(c, KEY, 0).status_code == 200 and len(tts.calls) == 2
 
 
+def test_disk_full_reports_507_without_burning_retries(make_client, monkeypatch):
+    import errno
+
+    import soundfile
+
+    from voxsync_server import main
+    c, tts = make_client()
+    real = soundfile.write
+    full = {"on": True}
+
+    def write(path, *a, **k):
+        if full["on"]:
+            raise OSError(errno.ENOSPC, "No space left on device")
+        return real(path, *a, **k)
+    monkeypatch.setattr("voxsync_server.cache.sf.write", write)
+    c.put(f"/episodes/{KEY}", json={"cues": cues(2)})
+    assert wait_for(lambda: c.get(f"/episodes/{KEY}/cues/0").status_code == 507)
+    assert c.get("/health").json()["diskFull"] is True
+    assert not list(main.S.cache.root.rglob("*.tmp"))                # no partial files left behind
+    full["on"] = False
+    main.S.registry.disk_full_until = 0                               # space freed (user action); resume
+    main.S.registry._wake.set()
+    assert get_ready(c, KEY, 0).status_code == 200                    # cue was not marked failed
+
+
+
 def test_deleting_voice_in_use_falls_back_to_default(make_client):
     c, tts = make_client()
     v = c.post("/voices", data={"name": "Bố", "consent": "true"},

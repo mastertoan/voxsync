@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>VoxSync — Giọng đọc &amp; cài đặt</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>VoxSync</h1>
+
+    <section aria-labelledby="h-conn">
+      <h2 id="h-conn">Kết nối server</h2>
+      <label for="endpoint">Địa chỉ server</label>
+      <input id="endpoint" type="url" placeholder="http://127.0.0.1:8765">
+      <label for="token">Token (nội dung file <code>~/.voxsync/token</code>)</label>
+      <input id="token" type="password" autocomplete="off">
+      <button id="saveConn" type="button">Lưu &amp; kiểm tra</button>
+      <span id="connStatus" role="status"></span>
+    </section>
+
+    <section aria-labelledby="h-voices">
+      <h2 id="h-voices">Giọng đọc</h2>
+      <div class="filters">
+        <label>Tìm <input id="q" type="search" placeholder="tên giọng"></label>
+        <label>Giới tính
+          <select id="fGender"><option value="">Tất cả</option><option value="female">Nữ</option><option value="male">Nam</option></select>
+        </label>
+        <label>Vùng
+          <select id="fRegion"><option value="">Tất cả</option><option>Bắc</option><option>Trung</option><option>Nam</option></select>
+        </label>
+        <label>Câu nghe thử <input id="sample" type="text" value="Xin chào, đây là giọng đọc thử của VoxSync." maxlength="200"></label>
+      </div>
+      <table>
+        <thead><tr><th scope="col">Giọng</th><th scope="col">Giới tính</th><th scope="col">Vùng</th><th scope="col">Phong cách</th><th scope="col">Thao tác</th></tr></thead>
+        <tbody id="voices"></tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="h-clone">
+      <h2 id="h-clone">Nhân bản giọng</h2>
+      <p>Clip 3–15 giây, giọng sạch (không nhạc nền). Hỗ trợ wav/mp3/flac.</p>
+      <label for="cloneName">Tên giọng</label>
+      <input id="cloneName" type="text" maxlength="60">
+      <label for="cloneFile">File âm thanh</label>
+      <input id="cloneFile" type="file" accept="audio/*">
+      <p><button id="recBtn" type="button">● Ghi âm từ micro</button> <span id="recStatus" role="status"></span></p>
+      <label class="check"><input id="consent" type="checkbox"> Tôi là chủ giọng nói này hoặc đã được chủ giọng cho phép sử dụng.</label>
+      <button id="cloneBtn" type="button">Tạo giọng</button>
+      <span id="cloneStatus" role="status"></span>
+    </section>
+
+    <section aria-labelledby="h-adv">
+      <h2 id="h-adv">Nâng cao</h2>
+      <label for="biasMs">Bù trễ hệ thống (ms, đo bằng chế độ debug)</label>
+      <input id="biasMs" type="number" step="1" min="-500" max="500">
+      <label class="check"><input id="debug" type="checkbox"> Chế độ debug (ghi số đo đồng bộ)</label>
+      <button id="exportMetrics" type="button">Xuất số đo đồng bộ của tab chophim đang mở</button>
+      <pre id="metricsOut" hidden></pre>
+    </section>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>

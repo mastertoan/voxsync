@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>VoxSync</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>VoxSync</h1>
+    <label class="switch"><input type="checkbox" id="enabled"> <span>Lồng tiếng</span></label>
+  </header>
+
+  <section aria-label="Trạng thái">
+    <p><span class="dot" id="serverDot" aria-hidden="true"></span> Server: <strong id="server">…</strong></p>
+    <p>Phụ đề: <strong id="subtitle">…</strong></p>
+    <p>Đã sinh: <strong id="progress">–</strong></p>
+    <p class="error" id="error" role="alert" hidden></p>
+  </section>
+
+  <section aria-label="Giọng">
+    <label for="voice">Giọng cho phim này</label>
+    <select id="voice"><option value="">(mặc định)</option></select>
+  </section>
+
+  <section aria-label="Âm lượng">
+    <label for="dubVolume">Âm lượng lồng tiếng <output id="dubVolumeOut"></output></label>
+    <input type="range" id="dubVolume" min="0" max="1.5" step="0.05">
+    <label for="duck">Âm gốc khi có thoại <output id="duckOut"></output></label>
+    <input type="range" id="duck" min="0" max="1" step="0.05">
+    <label for="offsetMs">Lệch đồng bộ <output id="offsetOut"></output></label>
+    <input type="range" id="offsetMs" min="-500" max="500" step="10">
+  </section>
+
+  <section aria-label="Quảng cáo">
+    <label class="switch"><input type="checkbox" id="blockAds"> <span>Chặn quảng cáo trên chophim</span></label>
+  </section>
+
+  <details>
+    <summary>Phụ đề thủ công</summary>
+    <label for="subUrl">URL .vtt/.srt (https)</label>
+    <input type="url" id="subUrl" placeholder="https://…/sub.vtt">
+    <button id="subUrlBtn" type="button">Dùng URL</button>
+    <label for="subFile">hoặc chọn file</label>
+    <input type="file" id="subFile" accept=".vtt,.srt,text/vtt">
+  </details>
+
+  <footer><a href="options.html" target="_blank" id="openOptions">Quản lý giọng &amp; cài đặt</a></footer>
+  <script src="popup.js"></script>
+</body>
+</html>

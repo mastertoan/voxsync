@@ -1,0 +1,8 @@
+/* Hide gambling banners/popups on chophim.lol (all served from /ads/webp/*, observed 2026-11-11). Injected only
+   while "Chặn quảng cáo" is on. :has() keeps the selectors tied to the ad images, not to layout classes. */
+a:has(> img[src*="/ads/"]),
+a:has(img[src*="/ads/webp/"]),
+div.fixed.inset-0:has(img[src*="/ads/webp/pop-"]),
+section:has(> a > img[src*="/ads/webp/pop-"]) {
+  display: none !important;
+}

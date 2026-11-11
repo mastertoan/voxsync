@@ -127,7 +127,7 @@ def _ep(key: str):
 def health():
     return {"ok": True, "model": config.TTS_REPO, "revision": config.TTS_REVISION[:12], "backend": "onnx",
             "voices": len(S.voices.list()), "defaultVoice": S.voices.default_id, "cacheBytes": S.cache.bytes,
-            "episodes": S.registry.episode_count(), "rtf": S.registry.rtf()}
+            "episodes": S.registry.episode_count(), "rtf": S.registry.rtf(), "diskFull": S.registry.disk_full()}
 
 
 @app.get("/voices")
@@ -270,6 +270,8 @@ def get_cue(key: str, idx: int):
     if S.registry.is_failed(c):
         raise HTTPException(410, {"code": "synth_failed"})
     if not c.ready:
+        if S.registry.disk_full():
+            raise HTTPException(507, {"code": "disk_full"})
         return Response(status_code=202, headers=RETRY)
     if c.dropped:
         return Response(status_code=204, headers={"X-Reason": "dropped", "X-Delay": f"{c.delay:.3f}"})

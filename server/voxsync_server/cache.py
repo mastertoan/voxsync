@@ -63,10 +63,19 @@ class DiskCache:
             return None
 
     def store(self, key: str, wav: np.ndarray, sr: int) -> None:
+        """Raises DiskFull when the volume is out of space (after one eviction pass); never leaves a .tmp."""
         p = self.path(key)
         p.parent.mkdir(parents=True, exist_ok=True)
         tmp = p.with_suffix(f".{threading.get_ident()}.tmp")
-        sf.write(tmp, wav, sr, subtype="PCM_16", format="WAV")
+        try:
+            sf.write(tmp, wav, sr, subtype="PCM_16", format="WAV")
+        except Exception as e:
+            tmp.unlink(missing_ok=True)
+            if _is_enospc(e):
+                with self._lock:
+                    self._evict(target=int(self._bytes * 0.8))     # free space we own, then report
+                raise DiskFull(str(e)) from e
+            raise
         size = tmp.stat().st_size
         with self._lock:
             try:
@@ -88,9 +97,9 @@ class DiskCache:
         except FileNotFoundError:
             pass
 
-    def _evict(self) -> None:
+    def _evict(self, target: int | None = None) -> None:
         files = sorted(self.root.rglob("*.wav"), key=lambda p: p.stat().st_mtime)
-        target = int(self.max_bytes * 0.9)
+        target = int(self.max_bytes * 0.9) if target is None else target
         for p in files:
             if self._bytes <= target:
                 break
@@ -104,3 +113,18 @@ class DiskCache:
     @property
     def bytes(self) -> int:
         return self._bytes
+
+
+class DiskFull(OSError):
+    pass
+
+
+def _is_enospc(e: BaseException | None) -> bool:
+    import errno
+    while e is not None:
+        if isinstance(e, OSError) and e.errno == errno.ENOSPC:
+            return True
+        if "No space left" in str(e):
+            return True
+        e = e.__cause__ or e.__context__
+    return False

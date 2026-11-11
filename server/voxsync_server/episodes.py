@@ -20,7 +20,7 @@ from collections import deque
 from dataclasses import dataclass, field
 
 from . import stretch
-from .cache import DiskCache, raw_key, stretched_key
+from .cache import DiskCache, DiskFull, raw_key, stretched_key
 from .normalize import normalize
 
 log = logging.getLogger("voxsync.worker")
@@ -99,6 +99,7 @@ class Registry:
         self._wake = threading.Event()
         self._stop = threading.Event()
         self._rtf: deque[float] = deque(maxlen=20)
+        self.disk_full_until = 0.0              # monotonic; while in the future, synthesis is paused
         self._thread = threading.Thread(target=self._run, name="voxsync-synth", daemon=True)
 
     def start(self) -> None:
@@ -196,6 +197,10 @@ class Registry:
 
     def _run(self) -> None:
         while not self._stop.is_set():
+            if time.monotonic() < self.disk_full_until:
+                self._wake.wait(timeout=5.0)
+                self._wake.clear()
+                continue
             job = self._next_job()
             if job is None:
                 self._wake.wait(timeout=1.0)
@@ -204,6 +209,10 @@ class Registry:
             ep, c = job
             try:
                 self._synth(ep, c)
+            except DiskFull:
+                # not the cue's fault: don't burn its retries; pause and retry later
+                self.disk_full_until = time.monotonic() + 30
+                log.error("disk full: synthesis paused 30 s")
             except Exception:
                 c.failed += 1
                 log.exception("synthesis failed for cue %s (%d/%d)", c.idx, c.failed, self.MAX_FAILS)
@@ -276,6 +285,9 @@ class Registry:
             c.prepared = c.ready = False
             c.failed = 0
         self._wake.set()
+
+    def disk_full(self) -> bool:
+        return time.monotonic() < self.disk_full_until
 
     def is_failed(self, c: Cue) -> bool:
         return not c.prepared and c.failed >= self.MAX_FAILS
