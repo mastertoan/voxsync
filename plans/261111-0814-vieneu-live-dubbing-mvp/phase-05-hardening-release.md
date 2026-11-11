@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Hardening + Bluetooth + phát hành nội bộ"
-status: pending
+status: in-progress
 priority: P1
 effort: "1d"
 dependencies: [1, 2, 3, 4]
@@ -47,9 +47,9 @@ dependencies: [1, 2, 3, 4]
 5. Viết tài liệu, dọn `spikes/`.
 
 ## Success Criteria
-- [ ] AirPods sau khi bù: rVFC p95 ≤ 120 ms, |signed mean| ≤ 30 ms.
-- [ ] 45 phút: 0 stall, RSS server dao động < 300 MB, không có lỗi console.
-- [ ] Mỗi lỗi vận hành trong checklist đều đã thử và đúng hành vi mô tả.
+- [ ] AirPods sau khi bù: rVFC p95 ≤ 120 ms, |signed mean| ≤ 30 ms. **Chưa đo:** máy test không có AirPods. Code đã resync khi đổi thiết bị và có slider offset.
+- [x] 45 phút (46,3 phút, giọng mới, cache trống, tập 3 tự sang tập 4): 0 stall, 0 pause ngoài ý muốn, RSS server 2640–2641 MB (dao động < 2 MB), duck/khôi phục âm lượng bình thường qua lúc đổi tập.
+- [x] Checklist lỗi vận hành: server restart, extension reload/disable, đầy đĩa, cache hỏng, nhiều tab đều đã thử. Đổi thiết bị âm thanh mới có trong code, chưa đo bằng thiết bị thật. Chi tiết ở `docs/02-browser-integration.md`.
 - [ ] Máy sạch (user khác trên macOS): làm theo README thì chạy được trong ≤ 15 phút (không tính tải model).
 - [ ] Toàn bộ success criteria trong `plan.md` đã tick.
 

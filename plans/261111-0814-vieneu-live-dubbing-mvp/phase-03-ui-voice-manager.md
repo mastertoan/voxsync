@@ -59,13 +59,13 @@ Viết bằng HTML/TS thuần, không React. Phase này làm song song được 
 5. Phụ đề thủ công: dán URL (fetch qua SW, chỉ nhận `https:`, ≤ 2 MB) hoặc chọn file (`FileReader`). Parse dùng chung `vtt.ts`; thêm parser SRT (test).
 
 ## Success Criteria
-- [ ] Từ popup đổi giọng giữa phim: câu tiếp theo (sau tối đa ~2 cue) dùng giọng mới, không trống tiếng quá 2 s.
-- [ ] Nghe thử một preset: có tiếng trong < 2 s (server đã warm).
-- [ ] Clone clip 5 s: giọng xuất hiện trong danh sách, dùng được ngay để lồng tiếng; thiếu consent thì không gửi được.
-- [ ] Giọng theo phim: mở phim A rồi phim B, mỗi phim dùng đúng giọng đã gán.
-- [ ] Offset +100 ms: rVFC signed mean dịch đúng khoảng +100 ms (±10).
-- [ ] Phụ đề thủ công (`.srt` và URL) chạy được trên server KK nếu có file.
-- [ ] Popup dùng được hoàn toàn bằng bàn phím.
+- [x] Đổi giọng giữa đoạn thoại dày (popup/storage): câu đầu tiên bằng giọng mới phát sau **1,24 s**.
+- [x] Nghe thử preset (server warm): **0,38–0,71 s**.
+- [x] Clone clip 5 s: giọng `u_…` xuất hiện trong danh sách popup và dùng được để lồng tiếng. Không tick consent: UI chặn; server cũng trả `400 consent_required`.
+- [x] Giọng theo phim: phim A dùng giọng clone, phim B (`bach-hoa-sat`) dùng "Trúc Ly", hai tab chạy song song. Sửa thêm: popup/options đọc lại `voiceByTitle` trước khi ghi, để hai trang mở cùng lúc không ghi đè gán giọng của nhau.
+- [x] Offset +100 ms: rVFC signed mean dịch **+99,9 ms** (−18,1 → +81,8 ms; n = 67/71).
+- [x] Server KK: `no-subtitle`, nạp `.srt` thì armed (760 câu) và có giảm âm khi thoại. URL `https:` nạp được; `http:` bị từ chối `https_only`.
+- [x] Popup dùng bàn phím: Tab đi qua đủ 7 điều khiển, Space bật/tắt, mũi tên chỉnh slider, có focus ring 2px; 0 điều khiển thiếu label.
 
 ## Risk Assessment
 | Rủi ro | Dấu hiệu | Phản ứng |

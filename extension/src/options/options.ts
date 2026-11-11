@@ -106,7 +106,8 @@ async function remove(v: Voice): Promise<void> {
   const r = await send({ op: "voices.delete", id: v.id });
   if (!r.ok) return alert(`Không xoá được (${r.code})`);
   if (settings.defaultVoice === v.id) await save({ defaultVoice: null });
-  const map = Object.fromEntries(Object.entries(settings.voiceByTitle).filter(([, id]) => id !== v.id));
+  const { voiceByTitle } = await chrome.storage.local.get({ voiceByTitle: {} }) as Pick<Settings, "voiceByTitle">;
+  const map = Object.fromEntries(Object.entries(voiceByTitle).filter(([, id]) => id !== v.id));
   await save({ voiceByTitle: map });
   await loadVoices();
 }

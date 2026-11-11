@@ -69,9 +69,11 @@ async function loadVoices(): Promise<void> {
     sel.append(o);
   }
   sel.value = (title && settings.voiceByTitle[title]) || settings.defaultVoice || "";
-  sel.addEventListener("change", () => {
+  sel.addEventListener("change", async () => {
     if (!title) return void save({ defaultVoice: sel.value || null });
-    const map = { ...settings.voiceByTitle };
+    // re-read: another popup/options page may have changed the map since this one loaded
+    const { voiceByTitle } = await chrome.storage.local.get({ voiceByTitle: {} }) as Pick<Settings, "voiceByTitle">;
+    const map = { ...voiceByTitle };
     if (sel.value) map[title] = sel.value; else delete map[title];
     void save({ voiceByTitle: map });
   });

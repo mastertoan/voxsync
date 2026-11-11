@@ -43,3 +43,27 @@ Cách đo: lấy `mediaTime` của frame đang hiển thị từ rVFC, so với 
 4. **Server offline nhưng vẫn phát câu đã decode, chiếm volume.** Sửa: khi offline thì không lập lịch, và chỉ thoát offline khi re-put thành công.
 5. **Đổi server rồi quay lại thì kẹt `idle`** vì player không fetch lại VTT. Sửa: gắn phụ đề với (tập, server) trong hash.
 6. **Server KK hiển thị `idle` thay vì `no-subtitle`.** Sửa: trạng thái này phụ thuộc phụ đề có thuộc media hiện tại hay không.
+
+## Phase 3–5: UI, chặn quảng cáo, hardening (E2E cùng môi trường)
+| Kịch bản | Kết quả |
+|---|---|
+| Nghe thử preset (server warm) | 0,38–0,71 s |
+| Clone clip 5 s | xuất hiện trong popup, lồng tiếng được. Thiếu consent: UI chặn, server trả `400` |
+| Đổi giọng giữa đoạn thoại dày | câu đầu tiên bằng giọng mới phát sau 1,24 s |
+| Giọng theo phim (2 tab, 2 phim) | mỗi tab dùng đúng giọng đã gán |
+| Offset +100 ms | signed mean −18,1 → +81,8 ms (+99,9) |
+| Phụ đề thủ công trên server KK (`.srt`, URL `https:`) | armed 760 câu, có giảm âm. URL `http:` bị từ chối |
+| Popup chỉ dùng bàn phím | Tab qua 7 điều khiển, Space/mũi tên hoạt động, focus ring 2px, 0 điều khiển thiếu label |
+| Bật chặn quảng cáo, load 3 lần | 0 pre-roll, `video.error` null, 0 banner `/ads/` |
+| Chạy 45 phút (46,3 phút, giọng mới, cache trống, tập 3 tự sang tập 4) | 0 stall, 0 pause ngoài ý muốn, RSS server 2640–2641 MB |
+| Tắt rồi bật lại extension giữa lúc đang duck | volume trả về giá trị của user (0,8). Bật lại: một click là armed, duck 0,24 ↔ 0,8 bình thường |
+| Đầy đĩa | server trả `507 disk_full` mà không tính là cue lỗi; popup hiện lỗi; giải phóng chỗ thì chạy tiếp (test) |
+| File cache hỏng / bị xoá | file hỏng: xoá rồi báo lỗi, không lặp vô hạn. File bị xoá: sinh lại (test) |
+| Đổi thiết bị âm thanh | `devicechange` hoặc `outputLatency` lệch > 20 ms thì resync (code, chưa đo trên AirPods) |
+
+Lỗi tìm thấy ở giai đoạn này:
+7. **Instance bị vô hiệu vẫn ghi volume:** sau khi tắt extension, listener `volumechange` của instance cũ ghi đè volume vừa khôi phục. Sửa: kiểm tra `chrome.runtime.id` trước mọi lần ghi; instance mồ côi chỉ hoàn lại duck nếu volume vẫn đúng là giá trị nó đã đặt.
+8. **Tab đang mở không có content script sau khi cài/cập nhật:** Chrome không tự inject lại. Sửa: SW inject lại vào các tab chophim đang mở; mỗi trang chỉ chạy một instance, nhờ heartbeat trên DOM.
+9. **libsndfile không trả `ENOSPC`** (chỉ báo "System error"), nên lỗi đầy đĩa bị coi là cue lỗi. Sửa: khi ghi lỗi thì kiểm tra dung lượng trống thực tế.
+10. **Metric đồng bộ tính cả offset của user,** nên đổi offset không làm số đo thay đổi. Sửa: so với thời điểm câu thoại thuộc về, không tính offset.
+11. **Hai trang popup/options ghi đè `voiceByTitle` của nhau.** Sửa: đọc lại map từ storage trước khi ghi.

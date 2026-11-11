@@ -44,7 +44,7 @@ Bỏ cấu trúc monorepo `packages/*` trong brief: MVP chỉ có 2 app; package
 | 2 | [Extension core: phụ đề + đồng bộ + ducking](./phase-02-extension-core.md) | 1 | — | Completed |
 | 3 | [Popup + quản lý giọng (F1)](./phase-03-ui-voice-manager.md) | 1, 2 | với 4 | Completed |
 | 4 | [Chặn quảng cáo (F3)](./phase-04-ad-blocking.md) | 2 | với 3 | Completed |
-| 5 | [Hardening + Bluetooth + phát hành nội bộ](./phase-05-hardening-release.md) | 1–4 | — | Pending |
+| 5 | [Hardening + Bluetooth + phát hành nội bộ](./phase-05-hardening-release.md) | 1–4 | — | In progress (chờ AirPods, máy sạch) |
 
 ```mermaid
 flowchart LR
@@ -83,9 +83,9 @@ Message giữa content script và SW là JSON. Audio đi dưới dạng base64. 
 - Nhiều giọng theo nhân vật, tách lời thoại khỏi nhạc nền, phụ đề in cứng (OCR), streaming TTS.
 
 ## Success Criteria (MVP)
-- [ ] Mở một tập bất kỳ trên server Song Ngữ: tự nhận VTT tiếng Việt và có tiếng lồng trong ≤ 3 s sau khi phim bắt đầu (không tính quảng cáo)
-- [ ] Lệch hình–tiếng (rVFC) trên loa trong: |signed mean| ≤ 5 ms, p95 ≤ 60 ms; trên AirPods sau khi bù: p95 ≤ 120 ms
-- [ ] Seek, pause, đổi tốc độ 1–1,5×, đổi tập, chạy tab nền: không phát sai câu, không rò tiếng tập cũ
-- [ ] Đổi giọng hoặc clone giọng ngay trong UI; nghe thử < 2 s
-- [ ] Bật chặn quảng cáo: không còn pre-roll, player không lỗi; tắt chặn: không lồng tiếng lên quảng cáo
-- [ ] Chạy 45 phút liên tục: 0 stall với thoại dày, RSS server ổn định
+- [x] Mở một tập trên server Song Ngữ: tự nhận VTT tiếng Việt, có tiếng lồng ngay khi phim bắt đầu (cache ấm) hoặc sau ~2 s (cache trống, RTF 0,11). Cần **một click** để có user activation.
+- [~] Lệch hình–tiếng trên loa trong: signed mean −2,9 ms, p95 36 ms ✅. **AirPods: chưa đo** (cần thiết bị thật).
+- [x] Seek, pause, đổi tốc độ 1–1,5×, đổi tập, tab nền: không phát sai câu, không rò tiếng tập cũ
+- [x] Đổi giọng/clone giọng ngay trong UI; nghe thử 0,38–0,71 s
+- [x] Bật chặn quảng cáo: 0 pre-roll, player không lỗi; tắt chặn: 0 câu lồng tiếng trong pre-roll 62 s
+- [x] Chạy 45 phút liên tục (46,3 phút): 0 stall, RSS server dao động < 2 MB
