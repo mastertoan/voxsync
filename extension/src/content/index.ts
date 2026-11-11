@@ -3,7 +3,7 @@
 import { send, type Reply } from "../shared/messages";
 import { DEFAULT_SETTINGS, type Cue, type Settings, type TabStatus } from "../shared/types";
 import { pageMediaKey, shouldArm, subtitleIsCurrent } from "./arm";
-import { CHOPHIM_SUB_RE, episodeKey, episodeOf, isVietnamese, titleOf } from "./subtitle-detect";
+import { CHOPHIM_SUB_RE, episodeKey, episodeNumber, episodeOf, isVietnamese, streamLinks, titleOf } from "./subtitle-detect";
 import { setAdBlocking } from "./cosmetic";
 import { driftOf, inWindow, plan, targetMedia } from "./timing";
 import { isThumbnailVtt, parseSubtitles } from "./vtt";
@@ -55,7 +55,7 @@ function start(): void {
     done: new Set<number>(),            // played to the end in this pass; cleared on resync
     offlineUntil: 0,
     status: { phase: "idle", title: null, episode: null, cues: 0, ready: 0, readyAhead: 0, voice: null,
-              lastError: null } as TabStatus,
+              lastError: null, mode: null, heard: null } as TabStatus,
     // duck state
     userVol: null as number | null,
     lastSetVol: -1,
@@ -83,7 +83,9 @@ function start(): void {
     if ("blockAds" in ch) setAdBlocking(S.settings.blockAds);
     if (!S.settings.enabled) { stopAll("disabled"); setDuck(false); }
     if ("offsetMs" in ch || "biasMs" in ch) resync("settings");
-    if (voiceForTitle() !== prevVoice && S.ep) { S.ep.put = false; dropAudio(); void ensurePut(); }
+    if ((voiceForTitle() !== prevVoice || "voiceMode" in ch || "cloneConsent" in ch) && S.ep) {
+      S.ep.put = false; dropAudio(); void ensurePut();
+    }
   });
 
   function voiceForTitle(): string | null {
@@ -95,6 +97,15 @@ function start(): void {
   new PerformanceObserver((list) => {
     for (const e of list.getEntries()) if (CHOPHIM_SUB_RE.test(e.name)) void onSubtitleUrl(e.name);
   }).observe({ type: "resource", buffered: true });
+
+  /** Original audio for multi-voice modes: the episode's direct HLS link from the page data (another server of
+   * the same movie) + the playing video's duration so the server can line the two timelines up. */
+  function mediaFor(ep: Episode): { media: string | null; duration: number | null } {
+    const links = streamLinks([...document.scripts].map((s) => s.textContent ?? "").join("\n"));
+    const media = links.get(episodeNumber(ep.episode)) ?? (links.size === 1 ? [...links.values()][0]! : null);
+    const d = S.video?.duration;
+    return { media, duration: d && Number.isFinite(d) && d > 300 ? d : null };    // ≤ 300 s = still the pre-roll
+  }
 
   const tried = new Set<string>();
   async function onSubtitleUrl(url: string, text?: string): Promise<void> {
@@ -143,13 +154,18 @@ function start(): void {
     const ep = S.ep;
     if (!ep || ep.put || !S.settings.enabled) return !!ep?.put;
     if (performance.now() < S.offlineUntil) return false;
-    const r = await send<{ cues: number; voice: string }>({ op: "episode.put", key: ep.key, voice: voiceForTitle(),
-      cues: ep.cues.map(({ idx, start, end, text }) => ({ idx, start, end, text })) });
+    const mode = S.settings.voiceMode === "clone" && !S.settings.cloneConsent ? "characters" : S.settings.voiceMode;
+    const { media, duration } = mode === "single" ? { media: null, duration: null } : mediaFor(ep);
+    if (mode !== "single" && media && duration === null) return false;      // wait for the movie (not the ad) to load
+    const r = await send<{ cues: number; voice: string; mode: TabStatus["mode"] }>({ op: "episode.put", key: ep.key,
+      voice: voiceForTitle(), cues: ep.cues.map(({ idx, start, end, text }) => ({ idx, start, end, text })),
+      mode, title: titleOf(location.href), media, duration, cloneConsent: S.settings.cloneConsent });
     if (!handleTransport(r)) return false;
     if (!r.ok) { S.status.lastError = r.code; return false; }
     if (S.ep !== ep) return false;
     ep.put = true;
     S.status.voice = r.data.voice;
+    S.status.mode = r.data.mode;
     S.status.lastError = null;
     if (S.status.phase === "server-offline" || S.status.phase === "unauthorized") S.status.phase = "idle";
     S.offlineUntil = 0;
@@ -478,8 +494,16 @@ function start(): void {
   const statusTimer = window.setInterval(async () => {
     const ep = S.ep;
     if (!ep?.put || !S.settings.enabled) return;
-    const r = await send<{ ready: number; readyAhead: number; voice: string }>({ op: "episode.status", key: ep.key });
-    if (r.ok) { S.status.ready = r.data.ready; S.status.readyAhead = r.data.readyAhead; S.status.voice = r.data.voice; }
+    // keep the server's playhead current during normal playback (not only on seek): it decides what the
+    // listener hears and the worker synthesizes next
+    if (S.video && !S.video.paused) await sendPlayhead();
+    const r = await send<{ ready: number; readyAhead: number; voice: string; mode: TabStatus["mode"];
+                           heard: number | null; sourceError: string | null }>({ op: "episode.status", key: ep.key });
+    if (r.ok) {
+      Object.assign(S.status, { ready: r.data.ready, readyAhead: r.data.readyAhead, voice: r.data.voice,
+                                mode: r.data.mode, heard: r.data.heard });
+      if (r.data.sourceError) S.status.lastError = "Không đọc được âm thanh gốc — đang lồng một giọng.";
+    }
     else if (r.code === "unknown_episode") { ep.put = false; }
     else handleTransport(r);
   }, 2000);
@@ -505,6 +529,7 @@ function start(): void {
   // ---------------- popup bridge ----------------
   chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
     if (msg?.op === "tab.status") { reply(S.status); return false; }
+    if (msg?.op === "tab.episodeKey") { reply(S.ep?.put ? S.ep.key : null); return false; }
     if (msg?.op === "tab.manualSubtitle") { void manualSubtitle(msg).then((err) => reply({ error: err })); return true; }
     if (msg?.op === "tab.metrics") {
       reply({ av: S.av, drift: S.drift, outputLatency: S.ctx?.outputLatency ?? null,

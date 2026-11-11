@@ -21,3 +21,11 @@ button { margin-top: 6px; padding: 5px 10px; border-radius: 6px; border: 1px sol
 output { color: var(--fg); float: right; }
 footer { border-top: 1px solid var(--line); padding-top: 8px; }
 a { color: var(--accent); }
+h2 { font-size: 13px; margin: 0 0 2px; }
+.hint { color: var(--muted); font-size: 12px; }
+#cast { list-style: none; margin: 4px 0 0; padding: 0; max-height: 220px; overflow-y: auto; }
+#cast li { padding: 5px 0; border-bottom: 1px dashed var(--line); }
+#cast li:last-child { border-bottom: 0; }
+#cast .who { display: flex; justify-content: space-between; gap: 6px; }
+#cast .line { color: var(--muted); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#cast select { margin-top: 3px; }

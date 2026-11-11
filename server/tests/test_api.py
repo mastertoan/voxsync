@@ -51,7 +51,7 @@ def test_voices_listing_parses_upstream_metadata(make_client):
 
 def test_episode_synthesizes_in_order_and_serves_wav(make_client):
     c, tts = make_client()
-    assert c.put(f"/episodes/{KEY}", json={"cues": cues()}).json() == {"cues": 6, "voice": "Hải Đăng"}
+    assert c.put(f"/episodes/{KEY}", json={"cues": cues()}).json() == {"cues": 6, "voice": "Hải Đăng", "mode": "single"}
     r = get_ready(c, KEY, 0)
     assert r.status_code == 200 and r.headers["content-type"] == "audio/wav"
     assert sf.info(io.BytesIO(r.content)).samplerate == SR

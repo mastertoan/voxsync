@@ -19,8 +19,21 @@
   </section>
 
   <section aria-label="Giọng">
-    <label for="voice">Giọng cho phim này</label>
+    <label for="voiceMode">Cách lồng tiếng</label>
+    <select id="voiceMode">
+      <option value="characters">Mỗi nhân vật một giọng</option>
+      <option value="clone">Giọng diễn viên (clone, chỉ dùng cá nhân)</option>
+      <option value="single">Một giọng cho cả phim</option>
+    </select>
+    <p class="hint" id="modeNote" hidden></p>
+    <label for="voice" id="voiceLabel">Giọng cho phim này</label>
     <select id="voice"><option value="">(mặc định)</option></select>
+  </section>
+
+  <section aria-label="Nhân vật" id="castSection" hidden>
+    <h2>Nhân vật</h2>
+    <p class="hint">Nhận ra theo giọng trong phim; nhân vật chính có giọng riêng. Đổi giọng áp dụng cho cả bộ phim.</p>
+    <ul id="cast"></ul>
   </section>
 
   <section aria-label="Âm lượng">

@@ -5,6 +5,7 @@ import logging
 import tempfile
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Literal
 
 import soundfile as sf
 import uvicorn
@@ -35,12 +36,16 @@ class State:
 S = State()
 
 
-def build(tts, cache: DiskCache | None = None, voices: VoiceStore | None = None) -> None:
-    """Wire components; tests call this with a fake engine."""
+def build(tts, cache: DiskCache | None = None, voices: VoiceStore | None = None, casts=None,
+          embedder_factory=None, source_factory=None) -> None:
+    """Wire components; tests call this with a fake engine (and fake embedder/source)."""
+    from .source import HlsSource
+    from .speakers import CastStore, Embedder
     S.tts = tts
     S.cache = cache or DiskCache()
     S.voices = voices or VoiceStore(tts)
-    S.registry = Registry(tts, S.cache, S.voices)
+    S.registry = Registry(tts, S.cache, S.voices, casts or CastStore(), embedder_factory or Embedder,
+                          source_factory or HlsSource, config.HOME / "refs")
     S.registry.start()
 
 
@@ -220,6 +225,11 @@ class CueIn(BaseModel):
 class EpisodeIn(BaseModel):
     voice: str | None = Field(default=None, max_length=80)
     cues: list[CueIn] = Field(max_length=config.MAX_CUES)
+    mode: Literal["single", "characters", "clone"] = "single"
+    title: str | None = Field(default=None, pattern=r"^[a-z0-9-]{1,120}$")
+    media: str | None = Field(default=None, max_length=2048, pattern=r"^https://")
+    duration: float | None = Field(default=None, gt=0, le=6 * 3600, allow_inf_nan=False)   # playing video's
+    cloneConsent: bool = False
 
     @field_validator("cues")
     @classmethod
@@ -235,8 +245,32 @@ EpKey = PathParam(pattern=KEY)
 
 @app.put("/episodes/{key}")
 def put_episode(body: EpisodeIn, key: str = EpKey):
-    ep = S.registry.put(key, body.voice, [c.model_dump() for c in body.cues])
-    return {"cues": len(ep.cues), "voice": ep.voice}
+    if body.mode == "clone" and not body.cloneConsent:
+        raise HTTPException(400, {"code": "consent_required"})
+    ep = S.registry.put(key, body.voice, [c.model_dump() for c in body.cues], body.mode, body.title, body.media,
+                        body.duration)
+    return {"cues": len(ep.cues), "voice": ep.voice, "mode": ep.mode}
+
+
+@app.get("/episodes/{key}/characters")
+def episode_characters(key: str = EpKey):
+    return {"characters": S.registry.characters(_ep(key))}
+
+
+class CharacterVoice(BaseModel):
+    voice: str | None = Field(default=None, max_length=80)
+
+
+@app.put("/titles/{title}/characters/{cid}")
+def set_character_voice(body: CharacterVoice, title: str = PathParam(pattern=r"^[a-z0-9-]{1,120}$"),
+                        cid: int = PathParam(ge=0)):
+    if body.voice and S.voices.get(body.voice) is None:
+        _not_found("unknown_voice")
+    try:
+        S.registry.set_character_voice(title, cid, body.voice)
+    except KeyError:
+        _not_found("unknown_character")
+    return {"ok": True}
 
 
 class Playhead(BaseModel):

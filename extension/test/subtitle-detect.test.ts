@@ -54,3 +54,15 @@ describe("episode / title / key", () => {
     expect(await episodeKey(urls.ep2)).not.toBe(a);
   });
 });
+
+describe("stream links in page data", () => {
+  it("maps episode numbers to direct https m3u8 links, skipping opaque player tokens", async () => {
+    const { streamLinks } = await import("../src/content/subtitle-detect");
+    const page = String.raw`{\"server_name\":\"Song Ngữ\",\"server_data\":[{\"name\":\"01\",\"slug\":\"tap-1\",\"link_m3u8\":\"/api/playback/manifest/p2.x\"}]},` +
+      String.raw`{\"server_name\":\"Vietsub (KK)\",\"server_data\":[{\"name\":\"01\",\"slug\":\"tap-01\",\"link_embed\":\"https:\/\/player.phimapi.com\/player\/?url=https:\/\/a.kvp726.com\/x\/index.m3u8\",\"link_m3u8\":\"https:\/\/a.kvp726.com\/x\/index.m3u8\"},` +
+      String.raw`{\"name\":\"02\",\"slug\":\"tap-02\",\"link_m3u8\":\"https:\/\/a.kvp726.com\/y\/index.m3u8\"}]}` +
+      String.raw`{"slug":"full","link_m3u8":"https://a.kvp726.com/m/index.m3u8"}`;
+    expect([...streamLinks(page)]).toEqual([
+      [1, "https://a.kvp726.com/x/index.m3u8"], [2, "https://a.kvp726.com/y/index.m3u8"], [0, "https://a.kvp726.com/m/index.m3u8"]]);
+  });
+});

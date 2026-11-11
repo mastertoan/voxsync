@@ -26,6 +26,20 @@ export interface Settings {
   biasMs: number;              // calibrated systematic offset (measured), subtracted from `when`
   blockAds: boolean;
   debug: boolean;
+  voiceMode: VoiceMode;        // single: one voice; characters: one preset per character; clone: actor's own voice
+  cloneConsent: boolean;       // user confirmed clone mode is for personal use only
+}
+
+export type VoiceMode = "single" | "characters" | "clone";
+
+export interface Character {
+  id: number;
+  lines: number;
+  gender: "male" | "female" | "";
+  main: boolean;
+  voice: string;
+  override: string | null;
+  sample: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -40,6 +54,8 @@ export const DEFAULT_SETTINGS: Settings = {
   biasMs: 0,
   blockAds: false,
   debug: false,
+  voiceMode: "characters",
+  cloneConsent: false,
 };
 
 /** Content-script status shown in the popup. */
@@ -52,4 +68,6 @@ export interface TabStatus {
   readyAhead: number;
   voice: string | null;
   lastError: string | null;
+  mode: VoiceMode | null;      // what the server is actually doing (falls back to single without a stream)
+  heard: number | null;        // cues whose speaker is known
 }

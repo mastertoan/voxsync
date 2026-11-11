@@ -1,6 +1,6 @@
 // Fixed op set between content/popup/options and the service worker. The SW never fetches a caller-supplied
 // URL except `subtitle.fetch` (https only, size-capped) for the manual-subtitle fallback.
-import type { Cue, Voice } from "./types";
+import type { Cue, Voice, VoiceMode } from "./types";
 
 export type Request =
   | { op: "health" }
@@ -9,9 +9,12 @@ export type Request =
   | { op: "voices.create"; name: string; clipB64: string; mime: string; consent: boolean }
   | { op: "voices.rename"; id: string; name: string }
   | { op: "voices.delete"; id: string }
-  | { op: "episode.put"; key: string; voice: string | null; cues: Cue[] }
+  | { op: "episode.put"; key: string; voice: string | null; cues: Cue[]; mode: VoiceMode; title: string | null;
+      media: string | null; duration: number | null; cloneConsent: boolean }
   | { op: "episode.playhead"; key: string; t: number }
   | { op: "episode.status"; key: string }
+  | { op: "episode.characters"; key: string }
+  | { op: "character.voice"; title: string; id: number; voice: string | null }
   | { op: "cue.get"; key: string; idx: number }
   | { op: "subtitle.fetch"; url: string };
 

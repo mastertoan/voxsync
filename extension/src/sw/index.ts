@@ -8,6 +8,7 @@ const MAX_SUBTITLE_BYTES = 2 * 1024 * 1024;
 const TIMEOUT_MS = 15_000;
 const VOICE_ID = /^[\p{L}\p{N} _.'-]{1,80}$/u;
 const EP_KEY = /^[A-Za-z0-9_-]{8,64}$/;
+const TITLE = /^[a-z0-9-]{1,120}$/;
 
 async function settings(): Promise<Settings> {
   return (await chrome.storage.local.get(DEFAULT_SETTINGS)) as Settings;
@@ -88,7 +89,16 @@ async function handle(req: Request): Promise<Reply> {
       return jsonReply(await call("DELETE", `/voices/${enc(req.id)}`));
     case "episode.put":
       if (!EP_KEY.test(req.key)) return bad("bad_key");
-      return jsonReply(await call("PUT", `/episodes/${req.key}`, JSON.stringify({ voice: req.voice, cues: req.cues })));
+      return jsonReply(await call("PUT", `/episodes/${req.key}`, JSON.stringify({
+        voice: req.voice, cues: req.cues, mode: req.mode, title: req.title, media: req.media, duration: req.duration,
+        cloneConsent: req.cloneConsent })));
+    case "episode.characters":
+      if (!EP_KEY.test(req.key)) return bad("bad_key");
+      return jsonReply(await call("GET", `/episodes/${req.key}/characters`));
+    case "character.voice":
+      if (!TITLE.test(req.title) || !Number.isInteger(req.id) || req.id < 0) return bad("bad_character");
+      if (req.voice !== null && !VOICE_ID.test(req.voice)) return bad("bad_voice");
+      return jsonReply(await call("PUT", `/titles/${req.title}/characters/${req.id}`, JSON.stringify({ voice: req.voice })));
     case "episode.playhead":
       if (!EP_KEY.test(req.key)) return bad("bad_key");
       return jsonReply(await call("POST", `/episodes/${req.key}/playhead`, JSON.stringify({ t: req.t })));

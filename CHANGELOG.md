@@ -1,6 +1,29 @@
 # Changelog
 
-## 0.1.0 — 2026-11-11
+## 0.2.0: 2026-11-12
+Lồng tiếng nhiều nhân vật và có cảm xúc.
+
+### Server
+- Chế độ `characters` và `clone` cho `PUT /episodes/{key}` (`mode`, `title`, `media`, `duration`, `cloneConsent`).
+- Đọc âm thanh gốc từ luồng HLS của server KK cùng tập (`source.py`):
+  - chỉ chấp nhận `https` trỏ tới địa chỉ public, có giới hạn kích thước;
+  - căn timeline bằng cách bỏ đoạn chèn (34,7 s ở tập 1), lệch đo được ≤ 0,1 s;
+  - không căn được thì báo lỗi rõ ràng, không đoán bừa.
+- Nhận diện người nói (`speakers.py`):
+  - embedding ERes2Net cộng phân loại giới tính audeering;
+  - gom cụm average-linkage, có ràng buộc giới tính;
+  - mỗi nhân vật giữ id ổn định qua các lần gom cụm;
+  - cast lưu theo từng phim, nên tập sau dùng lại.
+- 4 nhân vật chính có giọng riêng theo giới tính; người dùng đổi giọng từng nhân vật qua `PUT /titles/{t}/characters/{id}`; `GET /episodes/{key}/characters`.
+- Clone: mỗi nhân vật dùng tham chiếu ghép từ 3 câu gốc đầu tiên, sau đó cố định.
+- Mất nguồn âm thanh 3 lần thì các câu còn lại dùng một giọng (`sourceError` trong status).
+- Cảm xúc: mô tả âm thanh trong phụ đề được đổi thành `[cười]`, `[thở dài]`, `[hắng giọng]`.
+
+### Extension
+- Popup có chọn chế độ lồng tiếng (clone phải xác nhận) và danh sách nhân vật với câu mẫu, đổi giọng từng nhân vật.
+- Lấy link `.m3u8` của tập đang xem từ dữ liệu trang; gửi playhead định kỳ cho server.
+
+## 0.1.0: 2026-11-11
 Bản MVP đầu tiên, chỉ hỗ trợ chophim.lol.
 
 ### Server (`server/`)

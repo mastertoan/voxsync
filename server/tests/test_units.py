@@ -10,7 +10,11 @@ from voxsync_server.normalize import normalize
     ("Tôi là ai?", "Tôi là ai?"),
     ("<i>Hòa bình</i> cho thời đại chúng ta.", "Hòa bình cho thời đại chúng ta."),
     ("[thở dài]", ""),                                          # SFX-only cue disappears
-    ("Nghe hay quá đi [cười]. Tiếp nhé", "Nghe hay quá đi . Tiếp nhé"),
+    ("Nghe hay quá đi [cười]. Tiếp nhé", "Nghe hay quá đi [cười]. Tiếp nhé"),   # VieNeu emotion tag kept
+    ("[cười khẩy] Thật à?", "[cười] Thật à?"),                 # sound description → closest emotion tag
+    ("[hắng giọng]\nThưa ngài,", "[hắng giọng] Thưa ngài"),
+    ("- [tiếng mở cửa] - Hắn kia rồi!", "Hắn kia rồi!"),        # other descriptions dropped, both dashes too
+    ("(tiếng bíp)", ""),
     ("- Được rồi. Chúng tôi đi đây.\n- Nào. Ra ngoài.", "Được rồi. Chúng tôi đi đây. Nào. Ra ngoài."),
     ("Tôi sinh ra từ xung đột...", "Tôi sinh ra từ xung đột"),
     ("...kẻ nhân tạo\nvà đầy bệnh hoạn.", "kẻ nhân tạo và đầy bệnh hoạn."),

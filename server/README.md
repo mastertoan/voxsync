@@ -31,6 +31,12 @@ Khi ổ đĩa đầy, server xoá bớt cache của chính nó, tạm dừng sin
   - Key gồm: text đã chuẩn hoá, giọng, revision model, `NORM_VERSION`, và tốc độ stretch nếu có.
   - Key **không** chứa episode, nên khi server restart cache vẫn dùng lại được.
 - Episode chỉ lưu trong RAM. `PUT /episodes/{key}` là idempotent. Sau khi server restart, extension gửi lại `PUT` (nhận `404 unknown_episode` thì gửi lại).
+- Chế độ nhiều giọng (`mode: characters | clone`):
+  - Một luồng *listener* đi trước playhead tối đa 30 câu. Với mỗi câu, nó đọc âm thanh gốc qua `source.HlsSource` (tải trước 6 segment), tính embedding người nói và P(nữ), thêm câu vào cast của phim rồi gom cụm lại.
+  - Worker chỉ sinh tiếng cho câu đã được nghe, nên mỗi câu được lồng đúng giọng ngay từ đầu.
+  - Khi cast đổi (nhân vật mới, người dùng đổi giọng), các câu bị ảnh hưởng được gán lại giọng. Câu nào đã có trong cache thì chỉ cần đổi key.
+  - Cast lưu ở `~/.voxsync/cast/<phim>/` (`cast.json` + `lines.npy`), ghi lại tối đa 10 s một lần.
+  - Âm thanh gốc dùng cho clone lưu ở `~/.voxsync/refs/<phim>/`.
 - Căn thời lượng (`stretch.py`):
   - Câu vừa khe thời gian thì giữ nguyên.
   - Câu dài hơn khe thì chạy `ffmpeg atempo`, tối đa 1,25×.

@@ -3,6 +3,26 @@ import type { Cue } from "../shared/types";
 
 export const CHOPHIM_SUB_RE = /\/api\/storage\/subtitles\?file=/;
 
+/** Per-episode https HLS links in the page's inline data (chophim's other servers, e.g. KK), keyed by episode
+ * number ("tap-01" → 1; no number, e.g. "full" → 0). Only direct https *.m3u8 links: the playing server's links
+ * are opaque `/api/playback/...` tokens only the player can use, and the .m3u8 the player fetches itself is the
+ * pre-roll ad. */
+export function streamLinks(scriptText: string): Map<number, string> {
+  const raw = scriptText.replace(/\\"/g, '"').replace(/\\\//g, "/");
+  const out = new Map<number, string>();
+  for (const m of raw.matchAll(/"slug":"([^"]+)"[^{}]*?"link_m3u8":"(https:\/\/[^"\s]+?\.m3u8)"/g)) {
+    const n = /(\d+)/.exec(m[1]!)?.[1];
+    const ep = n === undefined ? 0 : Number(n);
+    if (!out.has(ep)) out.set(ep, m[2]!);
+  }
+  return out;
+}
+
+/** Episode number of an episodeOf() label: "tap-3" → 3, "movie" → 0. */
+export function episodeNumber(ep: string): number {
+  return Number(/(\d+)/.exec(ep)?.[1] ?? 0);
+}
+
 const VI_TOKEN = /(?:^|[_\-.])(vietnamese|vie|vi|viet|vn)(?:[_\-.]|\.vtt|\.srt|$)/i;
 const OTHER_TOKEN = /(?:^|[_\-.])(english|eng|en|korean|kor|ko|japanese|jpn|ja|chinese|chi|zh|french|fre|fr|thai|tha|th|spanish|spa|es)(?:[_\-.]|\.vtt|\.srt|$)/i;
 

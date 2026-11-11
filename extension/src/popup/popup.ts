@@ -1,5 +1,5 @@
 import { send, type VoicesList } from "../shared/messages";
-import { DEFAULT_SETTINGS, type Settings, type TabStatus } from "../shared/types";
+import { DEFAULT_SETTINGS, type Character, type Settings, type TabStatus, type Voice, type VoiceMode } from "../shared/types";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -16,6 +16,8 @@ const PHASE_TEXT: Record<TabStatus["phase"], string> = {
 let settings: Settings = DEFAULT_SETTINGS;
 let tabId: number | undefined;
 let title: string | null = null;
+let voices: Voice[] = [];
+let castSig = "";
 
 async function save(patch: Partial<Settings>): Promise<void> {
   settings = { ...settings, ...patch };
@@ -56,16 +58,108 @@ async function refresh(): Promise<void> {
   const err = $("error");
   err.hidden = !st.lastError;
   err.textContent = st.lastError ?? "";
+  const note = $("modeNote");
+  const wanted = settings.voiceMode;
+  note.hidden = !(st.mode && st.mode !== wanted);
+  note.textContent = st.mode === "single" && wanted !== "single"
+    ? "Chưa bắt được luồng phim (thử tải lại trang) — tạm lồng một giọng." : "";
+  await refreshCast(st);
+}
+
+function voiceLabel(v: Voice): string {
+  const meta = [v.gender === "female" ? "Nữ" : v.gender === "male" ? "Nam" : "", v.region].filter(Boolean).join(" · ");
+  return `${v.name}${v.kind === "user" ? " (của bạn)" : ""}${meta ? ` — ${meta}` : ""}`;
+}
+
+async function refreshCast(st: TabStatus): Promise<void> {
+  const section = $("castSection");
+  section.hidden = !st.mode || st.mode === "single";
+  if (section.hidden || !title) return;
+  const key = await tabMessage<string | null>({ op: "tab.episodeKey" });
+  if (!key) return;
+  const r = await send<{ characters: Character[] }>({ op: "episode.characters", key });
+  if (!r.ok) return;
+  const chars = r.data.characters.filter((c) => c.main || c.override || c.lines >= 3);
+  const sig = JSON.stringify(chars.map((c) => [c.id, c.voice, c.override, c.lines]));
+  if (sig === castSig || $("cast").contains(document.activeElement)) return;   // never rebuild under the user's focus
+  castSig = sig;
+  const list = $("cast");
+  list.replaceChildren();
+  if (!chars.length) {
+    const li = document.createElement("li");
+    li.className = "hint";
+    li.textContent = st.heard ? "Đang nhận diện nhân vật…" : "Đang nghe âm thanh gốc…";
+    list.append(li);
+    return;
+  }
+  chars.forEach((c, n) => {
+    const li = document.createElement("li");
+    const who = document.createElement("div");
+    who.className = "who";
+    const name = document.createElement("strong");
+    name.textContent = `${c.gender === "female" ? "Nữ" : c.gender === "male" ? "Nam" : "Nhân vật"} ${n + 1}${c.main ? " · chính" : ""}`;
+    const count = document.createElement("span");
+    count.className = "hint";
+    count.textContent = `${c.lines} câu`;
+    who.append(name, count);
+    const line = document.createElement("div");
+    line.className = "line";
+    line.textContent = `“${c.sample}”`;
+    line.title = c.sample;
+    const sel = document.createElement("select");
+    sel.setAttribute("aria-label", `Giọng cho ${name.textContent}`);
+    const auto = document.createElement("option");
+    auto.value = "";
+    auto.textContent = `Tự động (${c.override ? "…" : c.voice})`;
+    sel.append(auto);
+    for (const v of voices) {
+      const o = document.createElement("option");
+      o.value = v.id;
+      o.textContent = voiceLabel(v);
+      sel.append(o);
+    }
+    sel.value = c.override ?? "";
+    sel.addEventListener("change", async () => {
+      const res = await send({ op: "character.voice", title: title!, id: c.id, voice: sel.value || null });
+      if (!res.ok) alert(`Không đổi được giọng (${res.code})`);
+      castSig = "";
+    });
+    li.append(who, line, sel);
+    list.append(li);
+  });
+}
+
+function bindMode(): void {
+  const sel = $<HTMLSelectElement>("voiceMode");
+  const sync = () => {
+    $("voiceLabel").textContent = settings.voiceMode === "single" ? "Giọng cho phim này" : "Giọng mặc định (người lạ, phụ)";
+  };
+  sel.value = settings.voiceMode;
+  sync();
+  sel.addEventListener("change", async () => {
+    const mode = sel.value as VoiceMode;
+    if (mode === "clone" && !settings.cloneConsent) {
+      const ok = confirm("Chế độ này bắt chước giọng thật của diễn viên từ chính bộ phim.\n\n" +
+        "Chỉ dùng để xem cá nhân trên máy này; không ghi lại, không chia sẻ âm thanh tạo ra.\n\nBạn đồng ý?");
+      if (!ok) { sel.value = settings.voiceMode; return; }
+      await save({ cloneConsent: true, voiceMode: mode });
+    } else {
+      await save({ voiceMode: mode });
+    }
+    castSig = "";
+    sync();
+  });
 }
 
 async function loadVoices(): Promise<void> {
   const r = await send<VoicesList>({ op: "voices.list" });
   if (!r.ok) return;
+  voices = r.data.voices;
   const sel = $<HTMLSelectElement>("voice");
-  for (const v of r.data.voices) {
+  for (const v of voices) {
     const o = document.createElement("option");
     o.value = v.id;
-    o.textContent = `${v.name}${v.kind === "user" ? " (của bạn)" : ""} — ${[v.gender === "female" ? "Nữ" : v.gender === "male" ? "Nam" : "", v.region].filter(Boolean).join(" · ")}`;
+    o.textContent = voiceLabel(v);
     sel.append(o);
   }
   sel.value = (title && settings.voiceByTitle[title]) || settings.defaultVoice || "";
@@ -105,6 +199,7 @@ async function main(): Promise<void> {
   bindRange("dubVolume", (v) => `${Math.round(v * 100)}%`);
   bindRange("duck", (v) => `${Math.round(v * 100)}%`);
   bindRange("offsetMs", (v) => `${v > 0 ? "+" : ""}${v} ms`);
+  bindMode();
 
   $("subUrlBtn").addEventListener("click", async () => {
     const r = await tabMessage<{ error: string | null }>({ op: "tab.manualSubtitle", url: $<HTMLInputElement>("subUrl").value });
@@ -119,8 +214,8 @@ async function main(): Promise<void> {
   });
   $("openOptions").addEventListener("click", (e) => { e.preventDefault(); void chrome.runtime.openOptionsPage(); });
 
-  await refresh();
   await loadVoices();
+  await refresh();
   setInterval(refresh, 1500);
 }
 

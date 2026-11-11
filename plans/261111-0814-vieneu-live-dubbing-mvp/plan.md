@@ -45,6 +45,7 @@ Bỏ cấu trúc monorepo `packages/*` trong brief: MVP chỉ có 2 app; package
 | 3 | [Popup + quản lý giọng (F1)](./phase-03-ui-voice-manager.md) | 1, 2 | với 4 | Completed |
 | 4 | [Chặn quảng cáo (F3)](./phase-04-ad-blocking.md) | 2 | với 3 | Completed |
 | 5 | [Hardening + Bluetooth + phát hành nội bộ](./phase-05-hardening-release.md) | 1–4 | — | In progress (chờ AirPods, máy sạch) |
+| 6 | [Nhiều nhân vật + cảm xúc](./phase-06-multi-voice-emotion.md) | 1–4 | — | Completed |
 
 ```mermaid
 flowchart LR
@@ -80,7 +81,7 @@ Message giữa content script và SW là JSON. Audio đi dưới dạng base64. 
 - **Các trang khác.** Khi làm, detector generic phải:
   - đặt `track.mode = "hidden"` trước khi đọc cue (track `disabled` sẽ trả `cues` rỗng), và chỉ đọc sau sự kiện `load`;
   - với HLS qua hls.js/shaka thì cue đã có sẵn trong `textTracks`, chỉ trường hợp MSE thô mới phải tự ghép segment.
-- Nhiều giọng theo nhân vật, tách lời thoại khỏi nhạc nền, phụ đề in cứng (OCR), streaming TTS.
+- Tách lời thoại khỏi nhạc nền, phụ đề in cứng (OCR), streaming TTS. (Nhiều giọng theo nhân vật: đã làm ở Phase 6.)
 
 ## Success Criteria (MVP)
 - [x] Mở một tập trên server Song Ngữ: tự nhận VTT tiếng Việt, có tiếng lồng ngay khi phim bắt đầu (cache ấm) hoặc sau ~2 s (cache trống, RTF 0,11). Cần **một click** để có user activation.
