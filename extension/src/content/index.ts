@@ -1,6 +1,8 @@
-// Content script on chophim.lol/xem/*: capture the Vietnamese subtitle, keep the server's episode registry in
-// sync, and play pre-synthesized lines on an AudioContext scheduled against video.currentTime.
+// Content script on chophim watch pages (/xem/*, any chophim domain): capture the Vietnamese subtitle, keep the
+// server's episode registry in sync, and play pre-synthesized lines on an AudioContext scheduled against
+// video.currentTime.
 import { send, type Reply } from "../shared/messages";
+import { isSiteHost } from "../shared/site";
 import { DEFAULT_SETTINGS, type Cue, type Settings, type TabStatus } from "../shared/types";
 import { pageMediaKey, shouldArm, subtitleIsCurrent } from "./arm";
 import { CHOPHIM_SUB_RE, episodeKey, episodeNumber, episodeOf, isVietnamese, streamLinks, titleOf } from "./subtitle-detect";
@@ -9,11 +11,12 @@ import { driftOf, inWindow, plan, targetMedia } from "./timing";
 import { isThumbnailVtt, parseSubtitles } from "./vtt";
 
 
+// The manifest matches every https "/xem/*" page (chophim moves domains); do nothing on other sites.
 // One live instance per page. Instances live in separate isolated worlds (and an orphaned one cannot be
 // reached), so coordinate through a DOM heartbeat: a fresh instance only starts if the beat is stale.
 const BEAT_ATTR = "data-voxsync-beat";
 const beat = Number(document.documentElement.getAttribute(BEAT_ATTR) ?? 0);
-if (Date.now() - beat > 1500) start();
+if (isSiteHost(location.hostname) && Date.now() - beat > 1500) start();
 
 function start(): void {
   const TICK_MS = 250;

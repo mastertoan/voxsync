@@ -4,8 +4,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "regexFilter": "^https://chophim\\.lol/public/m3u8/",
-      "initiatorDomains": ["chophim.lol"],
+      "regexFilter": "^https://(www\\.)?chophim[a-z0-9-]*\\.[a-z.]+/public/m3u8/",
       "resourceTypes": ["xmlhttprequest", "media"]
     }
   },
@@ -14,8 +13,7 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": {
-      "urlFilter": "||chophim.lol/ads/",
-      "initiatorDomains": ["chophim.lol"],
+      "regexFilter": "^https://(www\\.)?chophim[a-z0-9-]*\\.[a-z.]+/ads/",
       "resourceTypes": ["image", "xmlhttprequest", "media", "script", "sub_frame"]
     }
   },

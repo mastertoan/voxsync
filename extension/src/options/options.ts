@@ -1,4 +1,5 @@
 import { send, type VoicesList } from "../shared/messages";
+import { watchTabs } from "../shared/site";
 import { DEFAULT_SETTINGS, type Settings, type Voice } from "../shared/types";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -187,7 +188,7 @@ function wav(chunks: Float32Array[], rate: number): Blob {
 }
 
 async function exportMetrics(): Promise<void> {
-  const tabs = await chrome.tabs.query({ url: "https://chophim.lol/xem/*" });
+  const tabs = await watchTabs();
   const out = $("metricsOut");
   out.hidden = false;
   if (!tabs[0]?.id) { out.textContent = "Không có tab chophim nào đang mở."; return; }

@@ -1,21 +1,21 @@
 {
   "manifest_version": 3,
   "name": "VoxSync — Lồng tiếng Việt",
-  "version": "0.1.0",
-  "description": "Lồng tiếng Việt theo phụ đề bằng VieNeu-TTS chạy trên máy (chophim.lol).",
+  "version": "0.2.1",
+  "description": "Lồng tiếng Việt theo phụ đề bằng VieNeu-TTS chạy trên máy (chophim, mọi tên miền).",
   "minimum_chrome_version": "120",
   "background": { "service_worker": "sw.js" },
   "permissions": ["storage", "declarativeNetRequest", "scripting"],
-  "host_permissions": ["http://127.0.0.1/*", "https://chophim.lol/*"],
+  "host_permissions": ["http://127.0.0.1/*", "https://*/xem/*"],
   "content_scripts": [
     {
-      "matches": ["https://chophim.lol/xem/*"],
+      "matches": ["https://*/xem/*"],
       "js": ["content.js"],
       "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
-    { "resources": ["chophim-cosmetic.css"], "matches": ["https://chophim.lol/*"] }
+    { "resources": ["chophim-cosmetic.css"], "matches": ["https://*/*"] }
   ],
   "action": { "default_popup": "popup.html", "default_title": "VoxSync" },
   "options_page": "options.html",

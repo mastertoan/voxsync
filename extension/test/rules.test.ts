@@ -33,6 +33,8 @@ describe("chophim ad ruleset", () => {
     ["https://chophim.lol/ads/webp/pop-789bet.webp", "image"],
     ["https://hpasoj.cc/landing", "main_frame"],
     ["https://789b668.me/", "sub_frame"],
+    ["https://chophim.xyz/public/m3u8/3c8eabe624134233a22569ee4fe896dc.m3u8", "xmlhttprequest"],   // new domain
+    ["https://chophim.xyz/ads/webp/s8-new.webp", "image"],
   ])("blocks %s (%s)", (url, type) => expect(blocked(url, type)).toBe(true));
 
   it.each([
@@ -45,5 +47,9 @@ describe("chophim ad ruleset", () => {
     ["https://p16-lp-sg.ibyteimg.com/origin/tos-alisg-i-375lmtcpo0-sg/thumb.jpg", "image"],   // seek thumbnails
     ["https://chophim.lol/xem/vision-truy-tim-ban-nga", "main_frame"],
     ["https://wsrv.nl/?url=https%3A%2F%2Fimage.tmdb.org%2Fposter.jpg", "image"],
+    ["https://chophim.xyz/api/storage/subtitles?file=x_vietnamese.vtt", "xmlhttprequest"],
+    ["https://chophim.xyz/xem/vision-truy-tim-ban-nga", "main_frame"],
+    ["https://example.com/ads/banner.webp", "image"],                        // other sites untouched
+    ["https://example.com/public/m3u8/x.m3u8", "xmlhttprequest"],
   ])("never blocks %s (%s)", (url, type) => expect(blocked(url, type)).toBe(false));
 });

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1: 2026-11-17
+- chophim chuyển từ `chophim.lol` sang `chophim.xyz`. Extension giờ nhận mọi tên miền `chophim*.<đuôi>` (content script khớp `https://*/xem/*` rồi tự dừng nếu không phải chophim; chặn quảng cáo cũng theo regex tên miền), nên lần đổi tên miền sau không cần sửa code.
+- Server không gửi `Referer` của chophim khi đọc luồng KK (không cần).
+
 ## 0.2.0: 2026-11-12
 Lồng tiếng nhiều nhân vật và có cảm xúc.
 

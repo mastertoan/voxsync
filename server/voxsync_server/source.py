@@ -53,7 +53,7 @@ def _check_url(url: str) -> None:
 
 def _get(url: str, limit: int) -> bytes:
     _check_url(url)
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Referer": "https://chophim.lol/"})
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
         _check_url(r.geturl())                       # redirects must stay public too
         data = r.read(limit + 1)

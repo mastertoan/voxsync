@@ -1,10 +1,10 @@
 # VoxSync: lồng tiếng Việt khi xem phim trên Chrome
 
-VoxSync đọc phụ đề tiếng Việt của phim đang xem trên **chophim.lol** bằng [VieNeu-TTS](https://github.com/pnnbao97/VieNeu-TTS) chạy ngay trên máy của bạn, và phát lời thoại khớp với hình. Video gốc không bị tải về hay chỉnh sửa, và không cần dịch vụ cloud.
+VoxSync đọc phụ đề tiếng Việt của phim đang xem trên **chophim** (mọi tên miền: chophim.xyz, chophim.lol, …) bằng [VieNeu-TTS](https://github.com/pnnbao97/VieNeu-TTS) chạy ngay trên máy của bạn, và phát lời thoại khớp với hình. Video gốc không bị tải về hay chỉnh sửa, và không cần dịch vụ cloud.
 
 ```mermaid
 flowchart LR
-  P[chophim.lol<br/>video + phụ đề VTT] -- PerformanceObserver --> CS[Content script<br/>lập lịch theo video.currentTime]
+  P[chophim<br/>video + phụ đề VTT] -- PerformanceObserver --> CS[Content script<br/>lập lịch theo video.currentTime]
   CS <--> SW[Service worker<br/>proxy, token]
   SW <--> S[Server local 127.0.0.1:8765<br/>VieNeu ONNX + cache WAV]
 ```
@@ -31,7 +31,7 @@ flowchart LR
    ```
 
 ## Sử dụng
-1. Mở phim trên chophim.lol, chọn server **Song Ngữ** (server có phụ đề tách rời).
+1. Mở phim trên chophim (tên miền hiện tại: chophim.xyz), chọn server **Song Ngữ** (server có phụ đề tách rời).
 2. Click một lần vào trang (ví dụ vào tiêu đề phim) để Chrome cho phép phát âm thanh. Quảng cáo đầu phim chạy xong thì lời thoại tiếng Việt sẽ phát, đồng thời âm gốc tự giảm khi có thoại.
 3. **Popup** cho phép:
    - bật/tắt lồng tiếng;
@@ -64,7 +64,7 @@ Lần đầu khởi động, server tải thêm 2 model khoảng 400 MB (trướ
 | Server khởi động lại | lồng tiếng tự nối lại sau khoảng 2,5 s |
 
 ## Giới hạn đã biết
-- Hiện chỉ hỗ trợ chophim.lol. Server "Vietsub (KK)" và "Thuyết Minh (KK)" in phụ đề vào hình nên không lồng tiếng được; hãy dùng phụ đề thủ công nếu có file.
+- Hiện chỉ hỗ trợ chophim. Khi site đổi tên miền, extension tự nhận (mọi host dạng `chophim*.<đuôi>`, đường dẫn `/xem/`), không cần cập nhật. Server "Vietsub (KK)" và "Thuyết Minh (KK)" in phụ đề vào hình nên không lồng tiếng được; hãy dùng phụ đề thủ công nếu có file.
 - Nhận diện nhân vật dựa trên giọng, nên chưa hoàn hảo. Cảnh 2 người ở tập 1 đúng 20/22 câu, không câu nào sai giới tính. Vai phụ ít lời có thể bị gộp hoặc tách nhầm; đổi giọng trong popup nếu cần. Phim không có server KK (luồng `.m3u8` trực tiếp) thì quay về một giọng, và popup báo lý do.
 - Câu thoại phát ở tốc độ 1× cả khi video chạy 1,25× hoặc 1,5×: đầu câu vẫn khớp hình nhưng câu sẽ kết thúc muộn hơn.
 - Tai nghe Bluetooth có độ trễ riêng: tự động bù theo `outputLatency`, phần còn lệch thì chỉnh bằng thanh "Lệch đồng bộ".
@@ -73,6 +73,6 @@ Lần đầu khởi động, server tải thêm 2 model khoảng 400 MB (trướ
 ## Phát triển
 ```bash
 cd server && uv run --group dev pytest -q           # 61 test
-cd extension && npm test && npx tsc --noEmit        # 49 test
+cd extension && npm test && npx tsc --noEmit        # 56 test
 ```
 Kế hoạch và các quyết định thiết kế nằm trong `plans/`, số đo và bằng chứng nằm trong `docs/`.

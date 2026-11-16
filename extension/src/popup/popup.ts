@@ -1,4 +1,5 @@
 import { send, type VoicesList } from "../shared/messages";
+import { isWatchUrl, watchTabs } from "../shared/site";
 import { DEFAULT_SETTINGS, type Character, type Settings, type TabStatus, type Voice, type VoiceMode } from "../shared/types";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -47,7 +48,7 @@ async function refresh(): Promise<void> {
     : h.code === "no_token" || h.status === 401 ? "thiếu/sai token" : "không chạy";
   const st = await tabMessage<TabStatus>({ op: "tab.status" });
   if (!st) {
-    $("subtitle").textContent = "mở một trang xem phim trên chophim.lol";
+    $("subtitle").textContent = "mở một trang xem phim trên chophim";
     $("progress").textContent = "–";
     return;
   }
@@ -178,8 +179,7 @@ async function main(): Promise<void> {
   // In the real toolbar popup the active tab is the page; opened as a regular tab (tests), fall back to the
   // most recent chophim watch tab.
   const [active] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const tab = active?.url?.startsWith("https://chophim.lol/xem/") ? active
-    : (await chrome.tabs.query({ url: "https://chophim.lol/xem/*" })).at(-1);
+  const tab = isWatchUrl(active?.url) ? active : (await watchTabs()).at(-1);
   if (tab?.id !== undefined) {
     tabId = tab.id;
     title = /\/xem\/([^/?#]+)/.exec(tab.url ?? "")?.[1] ?? null;
